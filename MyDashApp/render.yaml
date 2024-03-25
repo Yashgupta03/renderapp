@@ -1,7 +1,7 @@
 services:
   # See https://render.com/docs/blueprint-spec for more info on render blueprints
   - type: web
-    name: hummus-ninja-prior-4joy
+    name: bend-sauce-shop-kyv6
     env: python
     plan: free
     # A requirements.txt file must exist
