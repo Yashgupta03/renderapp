@@ -8,11 +8,10 @@ import numpy as np
 
 df_data=pd.read_csv("data_refined.csv")
 df_lang=pd.read_csv("lang_data.csv")
-with open('refined.geojson') as response:
+with open('assets/update.geojson') as response:
     geodata = json.load(response)
 
 app = Dash(__name__)
-server=app.server
 app.config.suppress_callback_exceptions=True
 app.layout = html.Div(children=[
     html.Div(className="row", children=[
@@ -50,15 +49,15 @@ def generate_choro():
                     hover_name="STATE",
                     hover_data=['STATE'],
                     zoom = 3.0,
-                    opacity = 0.8,
-                    labels={'unemp':'Languages'}
+                    # opacity = 0.8,
+                    # labels={'unemp':'Languages'},
                     )
     fig.update_layout(autosize=False,
                 height=700,
                 width=1000,
                 margin={"r":0,"t":0,"l":0,"b":0},
                 )
-    fig.update_traces(marker_line_width=0.3)
+    # fig.update_traces(marker_line_width=0.3)
     h_choro=dcc.Graph(id="lang_map",figure=fig)
     h_g1=dcc.Graph(id="dist_lang")
     h_g2=dcc.Graph(id="state_lang")
