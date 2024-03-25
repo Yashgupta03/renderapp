@@ -12,6 +12,7 @@ with open('assets/update.geojson') as response:
     geodata = json.load(response)
 
 app = Dash(__name__)
+server = app.server 
 app.config.suppress_callback_exceptions=True
 app.layout = html.Div(children=[
     html.Div(className="row", children=[
