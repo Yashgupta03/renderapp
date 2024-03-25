@@ -1,9 +1,8 @@
 import plotly.express as px
 import pandas as pd
-from dash import Dash, dcc, Input, Output, html, callback, ctx
+from dash import Dash, dcc, Input, Output, html
 import json
 import dash_echarts
-from dash.exceptions import PreventUpdate
 import tree_data
 import numpy as np
 
@@ -13,6 +12,7 @@ with open('refined.geojson') as response:
     geodata = json.load(response)
 
 app = Dash(__name__)
+server=app.server
 app.config.suppress_callback_exceptions=True
 app.layout = html.Div(children=[
     html.Div(className="row", children=[
