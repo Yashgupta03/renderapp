@@ -2,7 +2,6 @@ import plotly.express as px
 import pandas as pd
 from dash import Dash, dcc, Input, Output, html, clientside_callback
 import json
-import orjson
 import dash_echarts
 import tree_data
 import numpy as np
@@ -10,7 +9,7 @@ import numpy as np
 df_data=pd.read_csv("data_refined.csv")
 df_lang=pd.read_csv("lang_data.csv")
 with open('assets/update.geojson') as response:
-    geodata = orjson.loads(response.read())
+    geodata = json.loads(response.read())
 
 app = Dash(__name__)
 server = app.server
