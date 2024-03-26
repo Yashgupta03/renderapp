@@ -1,7 +1,8 @@
 import plotly.express as px
 import pandas as pd
-from dash import Dash, dcc, Input, Output, html
+from dash import Dash, dcc, Input, Output, html, clientside_callback
 import json
+import orjson
 import dash_echarts
 import tree_data
 import numpy as np
@@ -9,10 +10,9 @@ import numpy as np
 df_data=pd.read_csv("data_refined.csv")
 df_lang=pd.read_csv("lang_data.csv")
 with open('assets/update.geojson') as response:
-    geodata = json.load(response)
+    geodata = orjson.loads(response.read())
 
 app = Dash(__name__)
-server = app.server 
 app.config.suppress_callback_exceptions=True
 app.layout = html.Div(children=[
     html.Div(className="row", children=[
@@ -20,7 +20,7 @@ app.layout = html.Div(children=[
         html.Div(className="six columns", children=[
             dcc.Dropdown(
                 options=["Language Tree","Language Distribution","Language Specific"],
-                value="Language Distribution",
+                value="Language Tree",
                 id="dataframe_dropdown",
                 style={"width": "40%"}
             )
@@ -31,97 +31,96 @@ app.layout = html.Div(children=[
     html.Div(id="img")
 ])
 
-def generate_choro():
-    color_map={
-        "NO": 'Grey',
-        "DRAVIDIAN":"Grey",
-        "KHETRANI": 'Grey',
-        "SINO TIBETAN":"Grey",
-    }
-    fig = px.choropleth_mapbox(
-                    df_data, 
-                    geojson = geodata, 
-                    locations = df_data.Districts, 
-                    color = df_data["Languages"], 
-                    color_discrete_map=color_map,
-                    featureidkey = "properties.District",
-                    mapbox_style = "carto-positron",
-                    center = {"lat": 22.5937, "lon": 82.9629},
-                    hover_name="STATE",
-                    hover_data=['STATE'],
-                    zoom = 3.0,
-                    # opacity = 0.8,
-                    # labels={'unemp':'Languages'},
-                    )
-    fig.update_layout(autosize=False,
-                height=700,
-                width=1000,
-                margin={"r":0,"t":0,"l":0,"b":0},
-                )
-    # fig.update_traces(marker_line_width=0.3)
-    h_choro=dcc.Graph(id="lang_map",figure=fig)
-    h_g1=dcc.Graph(id="dist_lang")
-    h_g2=dcc.Graph(id="state_lang")
-    h_b1=dcc.Dropdown(options=np.append(df_lang['Languages'].dropna().unique(),["NO CHOOSEN",]),
-                value="NO CHOOSEN",
-                placeholder="Select a Language",
-                id="lang_dropdown",
-                style={"width": "40%"}
-            )
-    h_d1=html.Div([h_choro,html.Br(),h_b1],style={"display":"flex","flexDirection":"column"})
-    h_d2=html.Div([h_g1,h_g2],style={"display":"flex","flexDirection":"column"})
-    h_d3=html.Div([h_d1,h_d2],style={"display":"flex"})
-    return h_d3
 
-def generate_tree():
-    opts = {
-        "tooltip": {
-            "trigger": "item",
-            "triggerOn": "mousemove",
-            'formatter': '{b}'
-        },
-        "series": [
-            {
-                "type": "tree",
-                "data": [tree_data.data],
-                "top": "1%",
-                "left": "10%",
-                "bottom": "1%",
-                "right": "20%",
-                "symbolSize": 7,
-                "label": {
-                    "position": "bottom",
-                    "verticalAlign": "middle",
-                    "align": "right",
-                    "fontSize": 10,
-                    "color": "black",
-                },
-                "leaves": {
-                    "label": {
-                        "position": "right",
-                        "verticalAlign": "middle",
-                        "align": "left",
-                    }
-                },
-                # "emphasis": {
-                #     "focus": 'descendant'
-                # },
-                "expandAndCollapse": True,
-                "animationDuration": 550,
-                "animationDurationUpdate": 750,
+color_map={
+    "NO": 'Grey',
+    "DRAVIDIAN":"Grey",
+    "KHETRANI": 'Grey',
+    "SINO TIBETAN":"Grey",
+}
+fig_gl = px.choropleth_mapbox(
+                df_data, 
+                geojson = geodata, 
+                locations = df_data.Districts, 
+                color = df_data["Languages"], 
+                color_discrete_map=color_map,
+                featureidkey = "properties.District",
+                mapbox_style = "carto-positron",
+                center = {"lat": 22.5937, "lon": 82.9629},
+                hover_name="STATE",
+                hover_data=['STATE'],
+                zoom = 3.0,
+                # opacity = 0.8,
+                # labels={'unemp':'Languages'},
+                )
+fig_gl.update_layout(autosize=False,
+            height=700,
+            width=1000,
+            margin={"r":0,"t":0,"l":0,"b":0},
+            )
+fig_gl.update_traces(marker_line_width=0.3)
+h_choro=dcc.Graph(id="lang_map",figure=fig_gl)
+h_g1=dcc.Graph(id="dist_lang")
+h_g2=dcc.Graph(id="state_lang")
+h_b1=dcc.Dropdown(options=np.append(df_lang['Languages'].dropna().unique(),["NO CHOOSEN",]),
+            value="NO CHOOSEN",
+            placeholder="Select a Language",
+            id="lang_dropdown",
+            style={"width": "40%"}
+        )
+h_d1=html.Div([h_choro,html.Br(),h_b1],style={"display":"flex","flexDirection":"column"})
+h_d2=html.Div([h_g1,h_g2],style={"display":"flex","flexDirection":"column"})
+h_d3=html.Div([h_d1,h_d2],style={"display":"flex"})
+
+
+opts = {
+    "tooltip": {
+        "trigger": "item",
+        "triggerOn": "mousemove",
+        'formatter': '{b}'
+    },
+    "series": [
+        {
+            "type": "tree",
+            "data": [tree_data.data],
+            "top": "1%",
+            "left": "10%",
+            "bottom": "1%",
+            "right": "20%",
+            "symbolSize": 7,
+            "label": {
+                "position": "bottom",
+                "verticalAlign": "middle",
+                "align": "right",
+                "fontSize": 10,
+                "color": "black",
             },
-            
-        ],
+            "leaves": {
+                "label": {
+                    "position": "right",
+                    "verticalAlign": "middle",
+                    "align": "left",
+                }
+            },
+            # "emphasis": {
+            #     "focus": 'descendant'
+            # },
+            "expandAndCollapse": True,
+            "animationDuration": 550,
+            "animationDurationUpdate": 750,
+        },
+        
+    ],
+}
+fig_gt=dash_echarts.DashECharts(
+    option = opts,
+    id='echarts',
+    style={
+        "width": '100vw',
+        "height": '100vh',
     }
-    fig=dash_echarts.DashECharts(
-        option = opts,
-        id='echarts',
-        style={
-            "width": '100vw',
-            "height": '100vh',
-        }
-    )
-    return fig
+)
+
 
 def generate_choro_specific():
     return [dcc.Dropdown(
@@ -164,13 +163,11 @@ def create_choro_specific(major_lang_dropdown):
                 )
     return fig
 
+
 @app.callback(
     Output("dist_lang", "figure"),
     [Input("lang_map", "clickData"),
     Input("dataframe_dropdown", "value")]
-    # Input("lang_map", "hoverData"),
-    # prevent_initial_call=True,
-    # suppress_callback_exceptions=True
 )
 def create_graph(clickData,dataframe_dropdown):
     if dataframe_dropdown=="Language Tree":
@@ -184,53 +181,6 @@ def create_graph(clickData,dataframe_dropdown):
     fig = px.line(dff, x="Districts", y="Languages", markers=True)
     # fig.update_layout(width=600)
     return fig
-    df1=df_lang[df_lang["Districts"] == district_name]
-    opts = {
-        "tooltip": {
-            "trigger": "item",
-            "triggerOn": "mousemove",
-        },
-        "series": [
-            {
-                "type": "tree",
-                "data": [tree_data.data],
-                "top": "1%",
-                "left": "10%",
-                "bottom": "1%",
-                "right": "20%",
-                "symbolSize": 7,
-                "label": {
-                    "position": "bottom",
-                    "verticalAlign": "middle",
-                    "align": "right",
-                    "fontSize": 10,
-                    "color": "black",
-                },
-                "leaves": {
-                    "label": {
-                        "position": "right",
-                        "verticalAlign": "middle",
-                        "align": "left",
-                    }
-                },
-                # "emphasis": {
-                #     "focus": 'descendant'
-                # },
-                "expandAndCollapse": True,
-                "animationDuration": 550,
-                "animationDurationUpdate": 750,
-            },
-            
-        ],
-    }
-    dash_echarts.DashECharts(
-        option = opts,
-        id='echarts',
-        style={
-            "width": '100vw',
-            "height": '100vh',
-        }
-    )
 
 @app.callback(
         Output("lang_dropdown","value"),
@@ -270,9 +220,11 @@ def create_graph1(clickData,dataframe_dropdown,lang_dropdown):
 )
 def update(dataframe_dropdown):
     if dataframe_dropdown=="Language Tree":
-        return generate_tree()
+        # return generate_tree()
+        return fig_gt
     elif dataframe_dropdown=="Language Distribution":
-        return generate_choro()
+        # return generate_choro()
+        return h_d3
     else:
         return generate_choro_specific()
 
