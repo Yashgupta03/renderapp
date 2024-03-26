@@ -7,7 +7,7 @@ import tree_data
 import numpy as np
 
 
-dash.register_page(__name__,order=1)
+dash.register_page(__name__,order=1,path='/')
 
 opts = {
     "tooltip": {
