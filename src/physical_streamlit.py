@@ -47,5 +47,5 @@ r=pdk.Deck(
     ],
     tooltip={"html": "<b>Language:</b> {val}"},
 )
-
-st.pydeck_chart(r)
+r.to_html("physical_streamlit.html")
+# st.pydeck_chart(r)
